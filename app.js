@@ -50,7 +50,8 @@ function playAudioFile(src, onEnd = null) {
   audio.onended = () => {
     currentAudio = null;
     updatePlayAllBtnUI(false);
-    document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
+    document.querySelectorAll('.sentence-span').forEach(el => el.classList.remove('speaking'));
+    document.querySelectorAll('.pdf-header-title').forEach(el => el.classList.remove('speaking'));
     if (onEnd) onEnd();
   };
 
@@ -58,6 +59,8 @@ function playAudioFile(src, onEnd = null) {
     console.warn('Audio play error:', src);
     currentAudio = null;
     updatePlayAllBtnUI(false);
+    document.querySelectorAll('.sentence-span').forEach(el => el.classList.remove('speaking'));
+    document.querySelectorAll('.pdf-header-title').forEach(el => el.classList.remove('speaking'));
     if (onEnd) onEnd();
   };
 
@@ -65,6 +68,8 @@ function playAudioFile(src, onEnd = null) {
     console.warn('Audio play error:', err);
     currentAudio = null;
     updatePlayAllBtnUI(false);
+    document.querySelectorAll('.sentence-span').forEach(el => el.classList.remove('speaking'));
+    document.querySelectorAll('.pdf-header-title').forEach(el => el.classList.remove('speaking'));
     if (onEnd) onEnd();
   });
   updatePlayAllBtnUI(true);
@@ -80,7 +85,8 @@ function stopAllAudio() {
     window.speechSynthesis.cancel();
   }
   updatePlayAllBtnUI(false);
-  document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
+  document.querySelectorAll('.sentence-span').forEach(el => el.classList.remove('speaking'));
+  document.querySelectorAll('.pdf-header-title').forEach(el => el.classList.remove('speaking'));
 }
 
 function speakFallback(text, onEnd = null) {
@@ -239,7 +245,7 @@ function renderTabsForPart(part) {
   tabsContainer.innerHTML = '';
 
   const tabs = [
-    { id: 'dictation', label: '✍️ A. ディクテーション & 1文練習', icon: '📝' },
+    { id: 'dictation', label: '✍️ A. ディクテーション & 一文リスニング', icon: '📝' },
     { id: 'vocab', label: '📚 B. 単語・語彙チェック', icon: '💡' },
     { id: 'outline', label: '📊 C. アウトライン（要点）', icon: '🗺️' },
     { id: 'qa', label: '❓ D. 設問 Q&A', icon: '💬' },
@@ -288,7 +294,7 @@ function renderTabContent() {
   }
 }
 
-// 1. Natural Paragraph Dictation Tab with Toggleable Answers & 1-by-1 Sentence Practice
+// 1. Natural Paragraph Dictation Tab with In-Paragraph Sentence Audio & Click-to-Toggle Answers
 function renderDictationTab(part, container) {
   container.innerHTML = '';
   const card = document.createElement('div');
@@ -303,8 +309,12 @@ function renderDictationTab(part, container) {
         <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.35rem;">
           ${part.dictation.instructions}
         </p>
+        <div style="background: rgba(59, 73, 223, 0.07); border-left: 4px solid var(--primary); padding: 0.6rem 0.9rem; margin-top: 0.5rem; border-radius: var(--radius-sm); font-size: 0.95rem; color: var(--text-main); line-height: 1.6;">
+          🎧 <strong>一文リスニング：</strong>英文の一文一文をクリックすると、その文のネイティブ音声（高品質Neural音声）を1文ずつ聴くことができます。<br>
+          👁️ <strong>解答の表示・非表示：</strong>空所の番号バッジ（①など）や表示された解答をクリックすると、その箇所の正解の表示・非表示を個別に切り替えられます。
+        </div>
       </div>
-      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: flex-start;">
         <button class="btn-action ${dictationViewMode === 'exercise' ? 'active' : ''}" onclick="setDictationMode('exercise')">
           <span>✏️</span> 空所穴埋め演習
         </button>
@@ -316,66 +326,81 @@ function renderDictationTab(part, container) {
   `;
 
   if (dictationViewMode === 'exercise') {
-    // 1-A: Paragraph Exercise Mode with Inlined Inputs and Toggleable Answer Badges
+    // 1-A: Paragraph Exercise Mode: Sentences are clickable for 1-by-1 audio, Blanks are clickable for answer toggle
     const paraContainer = document.createElement('div');
     paraContainer.className = 'pdf-paragraph-container';
+
+    const circNums = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳','㉑','㉒','㉓','㉔','㉕','㉖','㉗','㉘','㉙','㉚'];
 
     part.paragraphs.forEach((para) => {
       const block = document.createElement('div');
       block.className = 'pdf-paragraph-block';
 
       if (para.heading) {
-        block.innerHTML += `<div class="pdf-header-title">${para.heading}</div>`;
+        const h = para.heading;
+        block.innerHTML += `
+          <div class="pdf-header-title" id="heading-${h.id}" onclick="playSentenceNativeAudio('${h.audio}', '${h.id}')" title="クリックして見出しの音声を聴く">
+            <span class="sentence-play-icon">🔊</span>${h.text}
+          </div>
+        `;
       }
 
       const speakerLabel = `<span class="speaker-label">${para.speaker}:</span><span class="speaker-role-tag">${para.speakerRole}</span>`;
       
-      let htmlText = para.textWithBlanks || '';
-      const circNums = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳','㉑','㉒','㉓','㉔','㉕','㉖','㉗','㉘','㉙','㉚'];
-      
-      part.dictation.blanks.forEach(b => {
-        const circNum = circNums[b.num - 1] || `(${b.num})`;
-        const savedVal = appState.dictationAnswers[`${part.id}_${b.num}`] || '';
-        const answerBadgeHtml = `<span class="dict-answer-badge" id="dict-ans-${part.id}-${b.num}" style="display: ${isAnswersVisible ? 'inline-block' : 'none'};">[正解: ${b.answer}]</span>`;
-        
-        const inputHtml = `<span class="dict-inline-span">
-          <span class="dict-input-wrap">
-            <span class="dict-badge-num">${circNum}</span>
-            <input type="text" class="dict-input" id="dict-input-${part.id}-${b.num}" data-part="${part.id}" data-num="${b.num}" data-answer="${b.answer}" data-hint="${b.hint}" value="${savedVal}" placeholder="..." autocomplete="off" autocapitalize="off">
-          </span>
-          ${answerBadgeHtml}
-        </span>`;
-        
-        const patternWithSpace = `(${circNum} )`;
-        const patternNoSpace = `(${circNum})`;
-        if (htmlText.includes(patternWithSpace)) {
-          htmlText = htmlText.split(patternWithSpace).join(inputHtml);
-        } else if (htmlText.includes(patternNoSpace)) {
-          htmlText = htmlText.split(patternNoSpace).join(inputHtml);
-        }
+      let sentencesHtml = '';
+
+      para.sentences.forEach((s) => {
+        let sText = s.textWithBlanks || '';
+
+        part.dictation.blanks.forEach(b => {
+          const circNum = circNums[b.num - 1] || `(${b.num})`;
+          const savedVal = appState.dictationAnswers[`${part.id}_${b.num}`] || '';
+          const answerBadgeHtml = `<span class="dict-answer-badge" id="dict-ans-${part.id}-${b.num}" style="display: ${isAnswersVisible ? 'inline-block' : 'none'};" onclick="toggleSingleAnswer('${part.id}', ${b.num}, event)" title="クリックで正解を隠す">[正解: ${b.answer}]</span>`;
+          
+          const inputHtml = `<span class="dict-inline-span" onclick="event.stopPropagation()">
+            <span class="dict-input-wrap">
+              <span class="dict-badge-num" onclick="toggleSingleAnswer('${part.id}', ${b.num}, event)" title="クリックで正解を表示/非表示">${circNum}</span>
+              <input type="text" class="dict-input" id="dict-input-${part.id}-${b.num}" data-part="${part.id}" data-num="${b.num}" data-answer="${b.answer}" data-hint="${b.hint}" value="${savedVal}" placeholder="..." autocomplete="off" autocapitalize="off">
+            </span>
+            ${answerBadgeHtml}
+          </span>`;
+          
+          const patternWithSpace = `(${circNum} )`;
+          const patternNoSpace = `(${circNum})`;
+          if (sText.includes(patternWithSpace)) {
+            sText = sText.split(patternWithSpace).join(inputHtml);
+          } else if (sText.includes(patternNoSpace)) {
+            sText = sText.split(patternNoSpace).join(inputHtml);
+          }
+        });
+
+        sentencesHtml += `
+          <span class="sentence-span" id="sentence-span-${s.id}" onclick="playSentenceNativeAudio('${s.audio}', '${s.id}')" title="クリックしてこの一文の音声を聴く">
+            <span class="sentence-play-icon">🔊</span>${sText}
+          </span> `;
       });
 
-      block.innerHTML += speakerLabel + htmlText;
+      block.innerHTML += speakerLabel + sentencesHtml;
       paraContainer.appendChild(block);
     });
 
     card.appendChild(paraContainer);
 
-    // Control Buttons: Answer Toggle, Check, Hint, Reset
+    // Control Buttons: Check, Toggle All Answers, Hint, Reset
     const ctrlBar = document.createElement('div');
     ctrlBar.className = 'dict-controls';
     ctrlBar.style.display = 'flex';
     ctrlBar.style.flexWrap = 'wrap';
     ctrlBar.style.gap = '0.75rem';
     ctrlBar.style.alignItems = 'center';
-    ctrlBar.style.marginBottom = '2rem';
+    ctrlBar.style.marginBottom = '1.5rem';
     
     ctrlBar.innerHTML = `
       <button class="btn-primary" onclick="checkDictationAnswers('${part.id}')">
         <span>✓</span> 答え合わせをする
       </button>
       <button class="btn-toggle-answer" id="btn-toggle-answer" onclick="toggleDictationAnswersVisibility('${part.id}')">
-        <span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '解答を隠す' : '解答を表示する'}
+        <span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '全ての解答を隠す' : '全ての解答を表示する'}
       </button>
       <button class="btn-secondary" onclick="toggleDictationHints('${part.id}')">
         <span>💡</span> ヒント（頭文字）
@@ -407,7 +432,7 @@ function renderDictationTab(part, container) {
     }, 50);
 
   } else {
-    // 1-B: Full Natural Paragraph Reader Mode (PDF Answers highlighted inline)
+    // 1-B: Full Natural Paragraph Reader Mode (Clickable sentences for audio + Answer highlights)
     const readerContainer = document.createElement('div');
     readerContainer.className = 'full-paragraph-reader';
 
@@ -416,21 +441,35 @@ function renderDictationTab(part, container) {
       block.className = 'pdf-paragraph-block';
 
       if (para.heading) {
-        block.innerHTML += `<div class="pdf-header-title">${para.heading}</div>`;
+        const h = para.heading;
+        block.innerHTML += `
+          <div class="pdf-header-title" id="heading-reader-${h.id}" onclick="playSentenceNativeAudio('${h.audio}', '${h.id}')" title="クリックして見出しの音声を聴く">
+            <span class="sentence-play-icon">🔊</span>${h.text}
+          </div>
+        `;
       }
 
       const speakerLabel = `<span class="speaker-label">${para.speaker}:</span><span class="speaker-role-tag">${para.speakerRole}</span>`;
       
-      let highlightedText = para.fullText || '';
-      part.dictation.blanks.forEach(b => {
-        const regex = new RegExp(`\\b(${b.answer})\\b`, 'gi');
-        highlightedText = highlightedText.replace(regex, `<span class="highlight-answer">$1</span>`);
+      let sentencesHtml = '';
+      para.sentences.forEach((s) => {
+        let highlightedText = s.fullText || '';
+        part.dictation.blanks.forEach(b => {
+          const regex = new RegExp(`\\b(${b.answer})\\b`, 'gi');
+          highlightedText = highlightedText.replace(regex, `<span class="highlight-answer">$1</span>`);
+        });
+
+        sentencesHtml += `
+          <span class="sentence-span" id="sentence-span-reader-${s.id}" onclick="playSentenceNativeAudio('${s.audio}', '${s.id}')" title="クリックしてこの一文の音声を聴く">
+            <span class="sentence-play-icon">🔊</span>${highlightedText}
+          </span> `;
       });
 
-      block.innerHTML += speakerLabel + `<span>${highlightedText}</span>`;
+      block.innerHTML += speakerLabel + sentencesHtml;
       
-      if (para.translationJa) {
-        block.innerHTML += `<div class="paragraph-translation"><strong>【日本語訳】</strong> ${para.translationJa}</div>`;
+      const combinedJa = para.sentences.map(s => s.ja).filter(Boolean).join(' ');
+      if (combinedJa) {
+        block.innerHTML += `<div class="paragraph-translation"><strong>【日本語訳】</strong> ${combinedJa}</div>`;
       }
 
       readerContainer.appendChild(block);
@@ -441,7 +480,7 @@ function renderDictationTab(part, container) {
     const backBar = document.createElement('div');
     backBar.style.display = 'flex';
     backBar.style.gap = '0.75rem';
-    backBar.style.marginBottom = '2rem';
+    backBar.style.marginBottom = '1.5rem';
     backBar.innerHTML = `
       <button class="btn-primary" onclick="playAudioFile('${part.audioFull}')">
         <span>▶</span> このパートの全文音声を聴く
@@ -453,64 +492,22 @@ function renderDictationTab(part, container) {
     card.appendChild(backBar);
   }
 
-  // 1-C: Sentence-by-Sentence Practice Section (DIRECTLY INTEGRATED)
-  const sentenceSection = document.createElement('div');
-  sentenceSection.style.marginTop = '2rem';
-  sentenceSection.style.borderTop = '2px dashed var(--border)';
-  sentenceSection.style.paddingTop = '1.75rem';
-
-  sentenceSection.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-      <h3 style="font-size: 1.35rem; font-weight: bold; font-family: var(--font-serif); color: var(--text-main);">
-        🎧 1文ずつリスニング＆発音練習スタジオ
-      </h3>
-      <span style="font-size: 0.95rem; color: var(--text-muted);">
-        文ごとにプロのネイティブ音声を聴いて、マイクで発音チェックができます
-      </span>
-    </div>
-  `;
-
-  const sentenceList = document.createElement('div');
-  part.sentences.forEach((s, idx) => {
-    const sCard = document.createElement('div');
-    sCard.className = 'sentence-practice-card';
-    sCard.id = `sentence-practice-${s.id}`;
-
-    const lastScore = appState.scores[s.id];
-    let badgeHtml = '';
-    if (lastScore !== undefined) {
-      const cls = lastScore >= 90 ? 'score-high' : lastScore >= 70 ? 'score-mid' : 'score-low';
-      badgeHtml = `<span class="score-badge ${cls}">スコア: ${lastScore}点</span>`;
-    }
-
-    sCard.innerHTML = `
-      <div class="sentence-practice-header">
-        <span class="speaker-label" style="font-size: 1.15rem;">${s.speaker}</span>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn-action" onclick="playSentenceNativeAudio('${s.audio}', '${s.id}')">
-            <span>🔊</span> この文を聴く
-          </button>
-          <button class="btn-action" id="btn-rec-${s.id}" onclick="startRecordingForSentence('${s.id}', '${s.en.replace(/'/g, "\\'")}')">
-            <span>🎙️</span> 発音採点
-          </button>
-        </div>
-      </div>
-      <div class="sentence-en">${s.en}</div>
-      <div class="sentence-ja">${s.ja}</div>
-      <div id="record-result-${s.id}" class="pronounce-feedback" style="${lastScore !== undefined ? '' : 'display: none;'}">
-        ${badgeHtml}
-      </div>
-    `;
-    sentenceList.appendChild(sCard);
-  });
-
-  sentenceSection.appendChild(sentenceList);
-  card.appendChild(sentenceSection);
-
   container.appendChild(card);
 }
 
-// Toggle Inlined Answers (Display / Hide Answers)
+// Toggle Single Answer on Click of its Location / Badge
+window.toggleSingleAnswer = function(partId, num, event) {
+  if (event) {
+    event.stopPropagation();
+  }
+  const badge = document.getElementById(`dict-ans-${partId}-${num}`);
+  if (!badge) return;
+  const isCurrentlyHidden = (badge.style.display === 'none' || !badge.style.display);
+  badge.style.display = isCurrentlyHidden ? 'inline-block' : 'none';
+  showToast(isCurrentlyHidden ? `空所 (${num}) の正解を表示しました` : `空所 (${num}) の正解を非表示にしました`);
+};
+
+// Toggle All Answers Visibility
 window.toggleDictationAnswersVisibility = function(partId) {
   isAnswersVisible = !isAnswersVisible;
   const part = UNIT5_DATA.parts.find(p => p.id === partId);
@@ -525,7 +522,7 @@ window.toggleDictationAnswersVisibility = function(partId) {
 
   const toggleBtn = document.getElementById('btn-toggle-answer');
   if (toggleBtn) {
-    toggleBtn.innerHTML = `<span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '解答を隠す' : '解答を表示する'}`;
+    toggleBtn.innerHTML = `<span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '全ての解答を隠す' : '全ての解答を表示する'}`;
     if (isAnswersVisible) {
       toggleBtn.classList.remove('btn-toggle-answer');
       toggleBtn.classList.add('btn-secondary');
@@ -535,7 +532,7 @@ window.toggleDictationAnswersVisibility = function(partId) {
     }
   }
 
-  showToast(isAnswersVisible ? '📖 解答を表示しました' : '🙈 解答を非表示にしました');
+  showToast(isAnswersVisible ? '📖 全ての解答を表示しました' : '🙈 全ての解答を非表示にしました');
 };
 
 window.setDictationMode = function(mode) {
@@ -571,7 +568,7 @@ window.checkDictationAnswers = function(partId) {
   if (correctCount === total) {
     showToast('🎉 全問正解です！素晴らしいリスニング力です！');
   } else {
-    showToast(`${correctCount}問正解！ 赤い枠の単語を見直してみましょう。「解答を表示する」で正解も確認できます。`);
+    showToast(`${correctCount}問正解！ 赤い枠の単語を見直してみましょう。「番号をクリック」または「全ての解答を表示する」で正解も確認できます。`);
   }
 };
 
@@ -607,8 +604,11 @@ window.resetDictation = function(partId) {
 
 // Play Sentence-by-Sentence Native Audio
 window.playSentenceNativeAudio = function(audioSrc, sentenceId) {
-  document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
-  const el = document.getElementById(`sentence-practice-${sentenceId}`);
+  stopAllAudio();
+  const el = document.getElementById(`sentence-span-${sentenceId}`) || 
+             document.getElementById(`sentence-span-reader-${sentenceId}`) || 
+             document.getElementById(`heading-${sentenceId}`) ||
+             document.getElementById(`heading-reader-${sentenceId}`);
   if (el) el.classList.add('speaking');
 
   playAudioFile(audioSrc, () => {

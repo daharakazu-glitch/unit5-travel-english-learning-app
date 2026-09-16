@@ -1,4 +1,4 @@
-// Unit 5: Listening 2 Part 1 & Listening 2 Part 2 専用データ
+// Unit 5: Listening 2 Part 1 & Part 2 専用データ（文単位オーディオ・パラグラフ対応）
 const UNIT5_DATA = {
   unitTitle: "Unit 5: What can we learn from traveling?",
   unitSubtitle: "Listening 2 Part 1 & Part 2 専用オンデマンド学習",
@@ -14,34 +14,81 @@ const UNIT5_DATA = {
       audioFull: "audio/l2p1_full.mp3",
       paragraphs: [
         {
-          heading: "Gap-year scheme launched by another Japanese university.",
+          heading: {
+            text: "Gap-year scheme launched by another Japanese university.",
+            audio: "audio/l2p1_s1.mp3",
+            id: "l2p1_s1"
+          },
           speaker: "Newscaster",
           speakerRole: "ニュースキャスター",
-          textWithBlanks: "Toyoda University of International Studies (① ) (② ) a gap-year program for its undergraduate students from the next academic year. Gap years have been popular in countries (③ ) (④ ) Australia and the UK for many years but have (⑤ ) (⑥ ) (⑦ ) (⑧ ) in Japan to date. However, at a press conference (⑨ ) this week to announce the new program, the university president was confident that the time is right to offer gap years to Japanese young people.",
-          fullText: "Toyoda University of International Studies is launching a gap-year program for its undergraduate students from the next academic year. Gap years have been popular in countries such as Australia and the UK for many years but have struggled to catch on in Japan to date. However, at a press conference called this week to announce the new program, the university president was confident that the time is right to offer gap years to Japanese young people.",
-          translationJa: "トヨダ国際大学は、来年度から学部生を対象としたギャップ・イヤー・プログラムを開始します。ギャップ・イヤーはオーストラリアやイギリスなどの国で長年人気を博してきましたが、これまで日本では定着に苦戦してきました。しかし、新プログラムを発表するために今週開かれた記者会見で、学長は日本の若者にギャップ・イヤーを提供する時期が来たと自信を見せました。"
+          sentences: [
+            {
+              id: "l2p1_s2",
+              audio: "audio/l2p1_s2.mp3",
+              textWithBlanks: "Toyoda University of International Studies (① ) (② ) a gap-year program for its undergraduate students from the next academic year.",
+              fullText: "Toyoda University of International Studies is launching a gap-year program for its undergraduate students from the next academic year.",
+              ja: "トヨダ国際大学は、来年度から学部生を対象としたギャップ・イヤー・プログラムを開始します。"
+            },
+            {
+              id: "l2p1_s3",
+              audio: "audio/l2p1_s3.mp3",
+              textWithBlanks: "Gap years have been popular in countries (③ ) (④ ) Australia and the UK for many years but have (⑤ ) (⑥ ) (⑦ ) (⑧ ) in Japan to date.",
+              fullText: "Gap years have been popular in countries such as Australia and the UK for many years but have struggled to catch on in Japan to date.",
+              ja: "ギャップ・イヤーはオーストラリアやイギリスなどの国で長年人気を博してきましたが、これまで日本では定着に苦戦してきました。"
+            },
+            {
+              id: "l2p1_s4",
+              audio: "audio/l2p1_s4.mp3",
+              textWithBlanks: "However, at a press conference (⑨ ) this week to announce the new program, the university president was confident that the time is right to offer gap years to Japanese young people.",
+              fullText: "However, at a press conference called this week to announce the new program, the university president was confident that the time is right to offer gap years to Japanese young people.",
+              ja: "しかし、新プログラムを発表するために今週開かれた記者会見で、学長は日本の若者にギャップ・イヤーを提供する時期が来たと自信を見せました。"
+            }
+          ]
         },
         {
           speaker: "University president",
           speakerRole: "トヨダ国際大学 学長",
-          textWithBlanks: "We think that (⑩ ) (⑪ ) (⑫ ) gap years are obvious. They will allow our undergraduates to experience the world outside of education, build up their independence, and give them a more rounded sense of themselves. Evidence from other countries shows that students who take a gap year (⑬ ) (⑭ ) (⑮ ) more mature, independent, and self-motivated than (⑯ ) (⑰ ) (⑱ ) (⑲ ) from school to university. Japanese students (⑳ ) (㉑ ) (㉒ ) (㉓ ) their gap year to study abroad will also develop their language skills and broaden their horizons. We hope and expect that (㉔ ) (㉕ ) (㉖ ) (㉗ ) (㉘ ) (㉙ ) (㉚ ).",
-          fullText: "We think that the benefits of gap years are obvious. They will allow our undergraduates to experience the world outside of education, build up their independence, and give them a more rounded sense of themselves. Evidence from other countries shows that students who take a gap year tend to be more mature, independent, and self-motivated than those who go straight from school to university. Japanese students who wish to use their gap year to study abroad will also develop their language skills and broaden their horizons. We hope and expect that many students will take up the offer.",
-          translationJa: "私たちはギャップ・イヤーの利点は明白であると考えています。学部生が教育の外の世界を体験し、自立心を育み、より円熟した自己意識を持つことを可能にします。他国のデータによれば、ギャップ・イヤーを取った学生は、高校から直接大学に進学した学生よりも円熟し、自立心があり、自主的である傾向が示されています。留学のためにギャップ・イヤーを利用したい日本の学生は、語学力を伸ばし、視野を広げることもできます。多くの学生がこの提案を受け入れてくれることを期待しています。"
+          sentences: [
+            {
+              id: "l2p1_s5",
+              audio: "audio/l2p1_s5.mp3",
+              textWithBlanks: "We think that (⑩ ) (⑪ ) (⑫ ) gap years are obvious.",
+              fullText: "We think that the benefits of gap years are obvious.",
+              ja: "私たちはギャップ・イヤーの利点は明白であると考えています。"
+            },
+            {
+              id: "l2p1_s6",
+              audio: "audio/l2p1_s6.mp3",
+              textWithBlanks: "They will allow our undergraduates to experience the world outside of education, build up their independence, and give them a more rounded sense of themselves.",
+              fullText: "They will allow our undergraduates to experience the world outside of education, build up their independence, and give them a more rounded sense of themselves.",
+              ja: "学部生が教育の外の世界を体験し、自立心を育み、より円熟した自己意識を持つことを可能にします。"
+            },
+            {
+              id: "l2p1_s7",
+              audio: "audio/l2p1_s7.mp3",
+              textWithBlanks: "Evidence from other countries shows that students who take a gap year (⑬ ) (⑭ ) (⑮ ) more mature, independent, and self-motivated than (⑯ ) (⑰ ) (⑱ ) (⑲ ) from school to university.",
+              fullText: "Evidence from other countries shows that students who take a gap year tend to be more mature, independent, and self-motivated than those who go straight from school to university.",
+              ja: "他国のデータによれば、ギャップ・イヤーを取った学生は、高校から直接大学に進学した学生よりも円熟し、自立心があり、自主的である傾向が示されています。"
+            },
+            {
+              id: "l2p1_s8",
+              audio: "audio/l2p1_s8.mp3",
+              textWithBlanks: "Japanese students (⑳ ) (㉑ ) (㉒ ) (㉓ ) their gap year to study abroad will also develop their language skills and broaden their horizons.",
+              fullText: "Japanese students who wish to use their gap year to study abroad will also develop their language skills and broaden their horizons.",
+              ja: "留学のためにギャップ・イヤーを利用したい日本の学生は、語学力を伸ばし、視野を広げることもできます。"
+            },
+            {
+              id: "l2p1_s9",
+              audio: "audio/l2p1_s9.mp3",
+              textWithBlanks: "We hope and expect that (㉔ ) (㉕ ) (㉖ ) (㉗ ) (㉘ ) (㉙ ) (㉚ ).",
+              fullText: "We hope and expect that many students will take up the offer.",
+              ja: "多くの学生がこの提案を受け入れてくれることを期待しています。"
+            }
+          ]
         }
       ],
-      sentences: [
-        { id: "l2p1_s1", speaker: "Newscaster", audio: "audio/l2p1_s1.mp3", en: "Gap-year scheme launched by another Japanese university.", ja: "日本の別の大学がギャップ・イヤー計画を開始。" },
-        { id: "l2p1_s2", speaker: "Newscaster", audio: "audio/l2p1_s2.mp3", en: "Toyoda University of International Studies is launching a gap-year program for its undergraduate students from the next academic year.", ja: "トヨダ国際大学は、来年度から学部生を対象としたギャップ・イヤー・プログラムを開始します。" },
-        { id: "l2p1_s3", speaker: "Newscaster", audio: "audio/l2p1_s3.mp3", en: "Gap years have been popular in countries such as Australia and the UK for many years but have struggled to catch on in Japan to date.", ja: "ギャップ・イヤーはオーストラリアやイギリスなどの国で長年人気を博してきましたが、これまで日本では定着に苦戦してきました。" },
-        { id: "l2p1_s4", speaker: "Newscaster", audio: "audio/l2p1_s4.mp3", en: "However, at a press conference called this week to announce the new program, the university president was confident that the time is right to offer gap years to Japanese young people.", ja: "しかし、新プログラムを発表するために今週開かれた記者会見で、学長は日本の若者にギャップ・イヤーを提供する時期が来たと自信を見せました。" },
-        { id: "l2p1_s5", speaker: "University president", audio: "audio/l2p1_s5.mp3", en: "We think that the benefits of gap years are obvious.", ja: "私たちはギャップ・イヤーの利点は明白であると考えています。" },
-        { id: "l2p1_s6", speaker: "University president", audio: "audio/l2p1_s6.mp3", en: "They will allow our undergraduates to experience the world outside of education, build up their independence, and give them a more rounded sense of themselves.", ja: "学部生が教育の外の世界を体験し、自立心を育み、より円熟した自己意識を持つことを可能にします。" },
-        { id: "l2p1_s7", speaker: "University president", audio: "audio/l2p1_s7.mp3", en: "Evidence from other countries shows that students who take a gap year tend to be more mature, independent, and self-motivated than those who go straight from school to university.", ja: "他国のデータによれば、ギャップ・イヤーを取った学生は、高校から直接大学に進学した学生よりも円熟し、自立心があり、自主的である傾向が示されています。" },
-        { id: "l2p1_s8", speaker: "University president", audio: "audio/l2p1_s8.mp3", en: "Japanese students who wish to use their gap year to study abroad will also develop their language skills and broaden their horizons.", ja: "留学のためにギャップ・イヤーを利用したい日本の学生は、語学力を伸ばし、視野を広げることもできます。" },
-        { id: "l2p1_s9", speaker: "University president", audio: "audio/l2p1_s9.mp3", en: "We hope and expect that many students will take up the offer.", ja: "多くの学生がこの提案を受け入れてくれることを期待しています。" }
-      ],
       dictation: {
-        instructions: "音声を聞いて、（ ）内に適する語を書き取りましょう。",
+        instructions: "音声を聞いて、（ ）内に適する語を書き取りましょう。★番号をクリックすると正解の表示・非表示が切り替わります。★英文をクリックするとその文の音声が聴けます。",
         blanks: [
           { num: 1, answer: "is", hint: "i..." },
           { num: 2, answer: "launching", hint: "l..." },
@@ -146,37 +193,80 @@ const UNIT5_DATA = {
         {
           speaker: "Newscaster",
           speakerRole: "ニュースキャスター",
-          textWithBlanks: "Parents and students that we talked to at a recent open day at the university had (① ) (② ) (③ ) the initiative.",
-          fullText: "Parents and students that we talked to at a recent open day at the university had mixed responses to the initiative.",
-          translationJa: "最近大学のオープンキャンパスで話を聞いた保護者や学生たちの反応は賛否両論でした。"
+          sentences: [
+            {
+              id: "l2p2_s1",
+              audio: "audio/l2p2_s1.mp3",
+              textWithBlanks: "Parents and students that we talked to at a recent open day at the university had (① ) (② ) (③ ) the initiative.",
+              fullText: "Parents and students that we talked to at a recent open day at the university had mixed responses to the initiative.",
+              ja: "最近大学のオープンキャンパスで話を聞いた保護者や学生たちの反応は賛否両論でした。"
+            }
+          ]
         },
         {
           speaker: "Parent",
           speakerRole: "保護者（母親）",
-          textWithBlanks: "Personally, I don’t want my daughter traveling the world. I know her and I worry that she will (④ ) (⑤ ) and (⑥ ) (⑦ ). I am also worried about her chances of getting a job after university if she takes a gap year.",
-          fullText: "Personally, I don't want my daughter traveling the world. I know her and I worry that she will lose focus and become lazy. I am also worried about her chances of getting a job after university if she takes a gap year.",
-          translationJa: "個人的には、娘に世界中を旅してほしくありません。あの子の性格を知っているので、集中力を失って怠け者になってしまうのではないかと心配です。また、ギャップ・イヤーを取ることで大学卒業後の就職に影響が出るのではないかとも懸念しています。"
+          sentences: [
+            {
+              id: "l2p2_s2",
+              audio: "audio/l2p2_s2.mp3",
+              textWithBlanks: "Personally, I don’t want my daughter traveling the world.",
+              fullText: "Personally, I don't want my daughter traveling the world.",
+              ja: "個人的には、娘に世界中を旅してほしくありません。"
+            },
+            {
+              id: "l2p2_s3",
+              audio: "audio/l2p2_s3.mp3",
+              textWithBlanks: "I know her and I worry that she will (④ ) (⑤ ) and (⑥ ) (⑦ ).",
+              fullText: "I know her and I worry that she will lose focus and become lazy.",
+              ja: "あの子の性格を知っているので、集中力を失って怠け者になってしまうのではないかと心配です。"
+            },
+            {
+              id: "l2p2_s4",
+              audio: "audio/l2p2_s4.mp3",
+              textWithBlanks: "I am also worried about her chances of getting a job after university if she takes a gap year.",
+              fullText: "I am also worried about her chances of getting a job after university if she takes a gap year.",
+              ja: "また、ギャップ・イヤーを取ることで大学卒業後の就職に影響が出るのではないかとも懸念しています。"
+            }
+          ]
         },
         {
           speaker: "Student",
           speakerRole: "受験生・学生",
-          textWithBlanks: "(⑧ ) (⑨ ) (⑩ ) (⑪ ) (⑫ ) (⑬ ) (⑭ ). I am mentally (⑮ ) (⑯ ) studying for university exams. I think that having new experiences and (⑰ ) (⑱ ) (⑲ ) (⑳ ) would allow me to rebuild my energy and enthusiasm. After that, I will be ready for studying again.",
-          fullText: "I think this is a great idea. I am mentally exhausted from studying for university exams. I think that having new experiences and a change of scenery would allow me to rebuild my energy and enthusiasm. After that, I will be ready for studying again.",
-          translationJa: "私はこれは素晴らしいアイデアだと思います。大学受験の勉強で精神的に疲れ果てています。新しい経験をして気分転換をすることで、エネルギーと熱意を取り戻すことができると思います。そうすれば、また勉強に取り組む準備が整います。"
+          sentences: [
+            {
+              id: "l2p2_s5",
+              audio: "audio/l2p2_s5.mp3",
+              textWithBlanks: "(⑧ ) (⑨ ) (⑩ ) (⑪ ) (⑫ ) (⑬ ) (⑭ ).",
+              fullText: "I think this is a great idea.",
+              ja: "私はこれは素晴らしいアイデアだと思います。"
+            },
+            {
+              id: "l2p2_s6",
+              audio: "audio/l2p2_s6.mp3",
+              textWithBlanks: "I am mentally (⑮ ) (⑯ ) studying for university exams.",
+              fullText: "I am mentally exhausted from studying for university exams.",
+              ja: "大学受験の勉強で精神的に疲れ果てています。"
+            },
+            {
+              id: "l2p2_s7",
+              audio: "audio/l2p2_s7.mp3",
+              textWithBlanks: "I think that having new experiences and (⑰ ) (⑱ ) (⑲ ) (⑳ ) would allow me to rebuild my energy and enthusiasm.",
+              fullText: "I think that having new experiences and a change of scenery would allow me to rebuild my energy and enthusiasm.",
+              ja: "新しい経験をして気分転換をすることで、エネルギーと熱意を取り戻すことができると思います。"
+            },
+            {
+              id: "l2p2_s8",
+              audio: "audio/l2p2_s8.mp3",
+              textWithBlanks: "After that, I will be ready for studying again.",
+              fullText: "After that, I will be ready for studying again.",
+              ja: "そうすれば、また勉強に取り組む準備が整います。"
+            }
+          ]
         }
       ],
-      sentences: [
-        { id: "l2p2_s1", speaker: "Newscaster", audio: "audio/l2p2_s1.mp3", en: "Parents and students that we talked to at a recent open day at the university had mixed responses to the initiative.", ja: "最近大学のオープンキャンパスで話を聞いた保護者や学生たちの反応は賛否両論でした。" },
-        { id: "l2p2_s2", speaker: "Parent", audio: "audio/l2p2_s2.mp3", en: "Personally, I don’t want my daughter traveling the world.", ja: "個人的には、娘に世界中を旅してほしくありません。" },
-        { id: "l2p2_s3", speaker: "Parent", audio: "audio/l2p2_s3.mp3", en: "I know her and I worry that she will lose focus and become lazy.", ja: "あの子の性格を知っているので、集中力を失って怠け者になってしまうのではないかと心配です。" },
-        { id: "l2p2_s4", speaker: "Parent", audio: "audio/l2p2_s4.mp3", en: "I am also worried about her chances of getting a job after university if she takes a gap year.", ja: "また、ギャップ・イヤーを取ることで大学卒業後の就職に影響が出るのではないかとも懸念しています。" },
-        { id: "l2p2_s5", speaker: "Student", audio: "audio/l2p2_s5.mp3", en: "I think this is a great idea.", ja: "私はこれは素晴らしいアイデアだと思います。" },
-        { id: "l2p2_s6", speaker: "Student", audio: "audio/l2p2_s6.mp3", en: "I am mentally exhausted from studying for university exams.", ja: "大学受験の勉強で精神的に疲れ果てています。" },
-        { id: "l2p2_s7", speaker: "Student", audio: "audio/l2p2_s7.mp3", en: "I think that having new experiences and a change of scenery would allow me to rebuild my energy and enthusiasm.", ja: "新しい経験をして気分転換をすることで、エネルギーと熱意を取り戻すことができると思います。" },
-        { id: "l2p2_s8", speaker: "Student", audio: "audio/l2p2_s8.mp3", en: "After that, I will be ready for studying again.", ja: "そうすれば、また勉強に取り組む準備が整います。" }
-      ],
       dictation: {
-        instructions: "音声を聞いて、（ ）内に適する語を書き取りましょう。",
+        instructions: "音声を聞いて、（ ）内に適する語を書き取りましょう。★番号をクリックすると正解の表示・非表示が切り替わります。★英文をクリックするとその文の音声が聴けます。",
         blanks: [
           { num: 1, answer: "mixed", hint: "m..." },
           { num: 2, answer: "responses", hint: "r..." },

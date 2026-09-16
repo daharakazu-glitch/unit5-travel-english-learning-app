@@ -25,7 +25,6 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
   --font-serif: 'Times New Roman', Times, Baskerville, Georgia, serif;
-  --font-sans: 'Times New Roman', Times, serif;
 }
 
 [data-theme="dark"] {
@@ -67,13 +66,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
   border-bottom: 1.5px solid var(--border);
   padding: 0.75rem 1.5rem;
 }
 [data-theme="dark"] .header {
-  background: rgba(19, 27, 46, 0.92);
+  background: rgba(19, 27, 46, 0.94);
 }
 
 .header-container {
@@ -386,12 +385,22 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--border);
   font-family: var(--font-serif);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-radius: var(--radius-sm);
+}
+.pdf-header-title:hover {
+  background-color: rgba(59, 73, 223, 0.08);
+}
+.pdf-header-title.speaking {
+  background-color: rgba(59, 73, 223, 0.22);
+  outline: 2px solid var(--primary);
 }
 
 .pdf-paragraph-block {
-  margin-bottom: 1.75rem;
-  line-height: 2.4;
-  font-size: 1.25rem;
+  margin-bottom: 1.85rem;
+  line-height: 2.5;
+  font-size: 1.3rem;
   font-family: var(--font-serif);
 }
 .pdf-paragraph-block:last-child {
@@ -402,7 +411,7 @@ body {
   font-weight: bold;
   color: var(--primary);
   margin-right: 0.5rem;
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-family: var(--font-serif);
   display: inline-block;
 }
@@ -418,12 +427,45 @@ body {
   vertical-align: middle;
 }
 
+/* Interactive Sentence Clickable Span inside Paragraph */
+.sentence-span {
+  display: inline;
+  padding: 0.2rem 0.4rem;
+  margin: 0 0.15rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s, box-shadow 0.15s;
+  border-bottom: 1.5px dotted rgba(59, 73, 223, 0.45);
+}
+
+.sentence-span:hover {
+  background-color: rgba(59, 73, 223, 0.12);
+  border-bottom-color: var(--primary);
+}
+
+.sentence-span.speaking {
+  background-color: rgba(59, 73, 223, 0.25) !important;
+  outline: 2px solid var(--primary);
+  border-bottom-color: transparent;
+}
+
+.sentence-play-icon {
+  font-size: 0.85rem;
+  color: var(--primary);
+  margin-right: 0.25rem;
+  opacity: 0.6;
+  vertical-align: middle;
+}
+.sentence-span:hover .sentence-play-icon {
+  opacity: 1;
+}
+
 /* Dictation Inline Inputs & Answer Badges */
 .dict-inline-span {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 0.3rem;
+  margin: 0 0.35rem;
   vertical-align: middle;
   position: relative;
 }
@@ -433,23 +475,40 @@ body {
   align-items: center;
 }
 
+/* Clickable Blank Number Badge (Toggle Answer) */
 .dict-badge-num {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   color: var(--primary);
   font-weight: bold;
-  margin-right: 0.2rem;
+  margin-right: 0.25rem;
   font-family: var(--font-serif);
+  cursor: pointer;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--primary);
+  background: var(--primary-light);
+  transition: all 0.15s;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dict-badge-num:hover {
+  background-color: var(--primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(59, 73, 223, 0.3);
 }
 
 .dict-input {
   width: 95px;
-  height: 2.2rem;
+  height: 2.3rem;
   padding: 0.2rem 0.5rem;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-main);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: bold;
   font-family: var(--font-serif);
   text-align: center;
@@ -474,19 +533,24 @@ body {
   color: var(--danger);
 }
 
-/* Inlined Answer Reveal Badge (Toggleable) */
+/* Inlined Answer Reveal Badge (Toggleable per Blank) */
 .dict-answer-badge {
   display: inline-block;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: bold;
   font-family: var(--font-serif);
   color: var(--success);
   background: var(--success-light);
-  padding: 0.1rem 0.45rem;
+  padding: 0.1rem 0.5rem;
   border-radius: var(--radius-sm);
-  margin-top: 0.2rem;
-  border: 1px solid var(--success);
+  margin-top: 0.25rem;
+  border: 1.5px solid var(--success);
+  cursor: pointer;
+  user-select: none;
   animation: fadeIn 0.2s ease-in-out;
+}
+.dict-answer-badge:hover {
+  background: #a7f3d0;
 }
 
 @keyframes fadeIn {
@@ -518,63 +582,24 @@ body {
 }
 
 .paragraph-translation {
-  margin-top: 0.75rem;
-  padding: 0.85rem 1.15rem;
+  margin-top: 0.85rem;
+  padding: 0.85rem 1.25rem;
   background: var(--bg-card);
-  border-left: 3.5px solid var(--accent);
+  border-left: 4px solid var(--accent);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   color: var(--text-muted);
   line-height: 1.7;
 }
 
-/* 1-Sentence Practice Studio Cards */
-.sentence-practice-card {
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1rem;
-  background: var(--bg-card);
-  transition: all 0.2s ease;
-}
-.sentence-practice-card:hover {
-  border-color: var(--border-focus);
-  box-shadow: var(--shadow);
-}
-.sentence-practice-card.speaking {
-  border-color: var(--primary);
-  background: var(--primary-light);
-}
-
-.sentence-practice-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.65rem;
-}
-
-.sentence-en {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 0.4rem;
-  font-family: var(--font-serif);
-  line-height: 1.6;
-}
-
-.sentence-ja {
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
 /* Action Buttons */
 .btn-action {
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 1rem;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border);
   background: var(--bg-card);
   color: var(--text-main);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   display: inline-flex;
@@ -592,18 +617,6 @@ body {
   background: var(--primary);
   color: white;
   border-color: var(--primary);
-}
-.btn-action.recording {
-  background: var(--danger);
-  color: white;
-  border-color: var(--danger);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
-  70% { transform: scale(1.03); box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
 }
 
 .btn-primary {
@@ -647,26 +660,6 @@ body {
   color: var(--primary);
 }
 
-.btn-toggle-answer {
-  background: var(--success-light);
-  color: var(--success);
-  border: 1.5px solid var(--success);
-  padding: 0.65rem 1.3rem;
-  border-radius: var(--radius-md);
-  font-weight: bold;
-  font-size: 1.05rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  transition: all 0.2s;
-  font-family: var(--font-serif);
-}
-.btn-toggle-answer:hover {
-  background: var(--success);
-  color: white;
-}
-
 /* Exercise Cards (Vocab, Outline, QA, Phrases) */
 .exercise-grid {
   display: grid;
@@ -703,37 +696,6 @@ body {
   color: var(--text-muted);
   font-size: 0.95rem;
 }
-
-/* Pronunciation Studio */
-.pronounce-feedback {
-  margin-top: 0.75rem;
-  padding: 0.85rem 1.15rem;
-  border-radius: var(--radius-md);
-  background: var(--bg-main);
-  border: 1.5px dashed var(--border);
-}
-.score-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-weight: bold;
-  font-size: 1rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
-  margin-bottom: 0.4rem;
-}
-.score-high { background: var(--success-light); color: var(--success); }
-.score-mid { background: var(--warning-light); color: var(--warning); }
-.score-low { background: var(--danger-light); color: var(--danger); }
-
-.speech-transcript {
-  font-size: 1.1rem;
-  margin-top: 0.35rem;
-  font-family: var(--font-serif);
-  font-style: italic;
-}
-.word-match { color: var(--success); font-weight: bold; }
-.word-mismatch { color: var(--danger); text-decoration: underline wavy; }
 
 /* Toast */
 .toast {
