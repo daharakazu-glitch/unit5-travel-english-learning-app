@@ -1,10 +1,11 @@
-// Antigravity Unit 5 Listening 2 Part 1 & Part 2 Specialized Learning Engine
+// Antigravity Unit 5 Listening 2 Part 1 & Part 2 Learning Engine
 let currentPartIndex = 0;
-let currentTab = 'dictation'; // Default to dictation
+let currentTab = 'dictation';
 let speechRate = 1.0;
 let currentAudio = null;
 let currentRecognition = null;
 let dictationViewMode = 'exercise'; // 'exercise' or 'paragraph'
+let isAnswersVisible = false; // Toggle state for showing answers inline
 
 // Progress & Storage
 const STORAGE_KEY = 'unit5_l2_progress';
@@ -34,7 +35,7 @@ function saveState() {
   updateStatsHeader();
 }
 
-// Audio Engine: Native Neural Audio (MP3) priority with Web Speech API fallback
+// Audio Engine: Native Neural Audio (MP3) priority
 function playAudioFile(src, onEnd = null) {
   stopAllAudio();
   if (!src) {
@@ -49,19 +50,19 @@ function playAudioFile(src, onEnd = null) {
   audio.onended = () => {
     currentAudio = null;
     updatePlayAllBtnUI(false);
-    document.querySelectorAll('.reader-sentence, .sentence-item').forEach(el => el.classList.remove('active-speaking', 'speaking'));
+    document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
     if (onEnd) onEnd();
   };
 
   audio.onerror = () => {
-    console.warn('Audio play error, falling back to synthesis:', src);
+    console.warn('Audio play error:', src);
     currentAudio = null;
     updatePlayAllBtnUI(false);
     if (onEnd) onEnd();
   };
 
   audio.play().catch(err => {
-    console.warn('Audio playback error:', err);
+    console.warn('Audio play error:', err);
     currentAudio = null;
     updatePlayAllBtnUI(false);
     if (onEnd) onEnd();
@@ -79,7 +80,7 @@ function stopAllAudio() {
     window.speechSynthesis.cancel();
   }
   updatePlayAllBtnUI(false);
-  document.querySelectorAll('.reader-sentence, .sentence-item').forEach(el => el.classList.remove('active-speaking', 'speaking'));
+  document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
 }
 
 function speakFallback(text, onEnd = null) {
@@ -213,6 +214,7 @@ function renderPartNav() {
     btn.addEventListener('click', () => {
       stopAllAudio();
       currentPartIndex = idx;
+      isAnswersVisible = false; // Reset answer visibility on part switch
       renderPartNav();
       renderCurrentPart();
     });
@@ -237,12 +239,11 @@ function renderTabsForPart(part) {
   tabsContainer.innerHTML = '';
 
   const tabs = [
-    { id: 'dictation', label: '✍️ A. ディクテーション（パラグラフ形式）', icon: '📝' },
+    { id: 'dictation', label: '✍️ A. ディクテーション & 1文練習', icon: '📝' },
     { id: 'vocab', label: '📚 B. 単語・語彙チェック', icon: '💡' },
     { id: 'outline', label: '📊 C. アウトライン（要点）', icon: '🗺️' },
     { id: 'qa', label: '❓ D. 設問 Q&A', icon: '💬' },
-    { id: 'communication', label: '🗣️ E. コミュニケーション表現', icon: '💬' },
-    { id: 'pronounce', label: '🎙️ 一文録音＆発音評価スタジオ', icon: '🎯' }
+    { id: 'communication', label: '🗣️ E. コミュニケーション表現', icon: '💬' }
   ];
 
   if (!tabs.find(t => t.id === currentTab)) {
@@ -284,13 +285,10 @@ function renderTabContent() {
     case 'communication':
       renderCommunicationTab(part, container);
       break;
-    case 'pronounce':
-      renderPronounceTab(part, container);
-      break;
   }
 }
 
-// 1. Natural Paragraph Dictation Tab (PDF Style)
+// 1. Natural Paragraph Dictation Tab with Toggleable Answers & 1-by-1 Sentence Practice
 function renderDictationTab(part, container) {
   container.innerHTML = '';
   const card = document.createElement('div');
@@ -300,25 +298,25 @@ function renderDictationTab(part, container) {
     <div class="section-header">
       <div>
         <div class="section-title">
-          <span>✍️ A. Dictation（自然なパラグラフ形式・PDF準拠）</span>
+          <span>✍️ A. Dictation（自然なパラグラフ形式・Times New Roman）</span>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.35rem;">
           ${part.dictation.instructions}
         </p>
       </div>
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
         <button class="btn-action ${dictationViewMode === 'exercise' ? 'active' : ''}" onclick="setDictationMode('exercise')">
-          <span>✏️</span> 空所穴埋めモード
+          <span>✏️</span> 空所穴埋め演習
         </button>
         <button class="btn-action ${dictationViewMode === 'paragraph' ? 'active' : ''}" onclick="setDictationMode('paragraph')">
-          <span>📖</span> 全文正解パラグラフ（ハイライト表示）
+          <span>📖</span> 全文正解パラグラフ表示
         </button>
       </div>
     </div>
   `;
 
   if (dictationViewMode === 'exercise') {
-    // 1-A: Exercise Mode (Natural Paragraph with Inlined Blanks)
+    // 1-A: Paragraph Exercise Mode with Inlined Inputs and Toggleable Answer Badges
     const paraContainer = document.createElement('div');
     paraContainer.className = 'pdf-paragraph-container';
 
@@ -338,9 +336,16 @@ function renderDictationTab(part, container) {
       part.dictation.blanks.forEach(b => {
         const circNum = circNums[b.num - 1] || `(${b.num})`;
         const savedVal = appState.dictationAnswers[`${part.id}_${b.num}`] || '';
-        const inputHtml = `<span class="dict-inline-span"><span class="dict-badge-num">${circNum}</span><input type="text" class="dict-input" id="dict-input-${part.id}-${b.num}" data-part="${part.id}" data-num="${b.num}" data-answer="${b.answer}" data-hint="${b.hint}" value="${savedVal}" placeholder="..." autocomplete="off" autocapitalize="off"></span>`;
+        const answerBadgeHtml = `<span class="dict-answer-badge" id="dict-ans-${part.id}-${b.num}" style="display: ${isAnswersVisible ? 'inline-block' : 'none'};">[正解: ${b.answer}]</span>`;
         
-        // Match both "(① )" and "(①)"
+        const inputHtml = `<span class="dict-inline-span">
+          <span class="dict-input-wrap">
+            <span class="dict-badge-num">${circNum}</span>
+            <input type="text" class="dict-input" id="dict-input-${part.id}-${b.num}" data-part="${part.id}" data-num="${b.num}" data-answer="${b.answer}" data-hint="${b.hint}" value="${savedVal}" placeholder="..." autocomplete="off" autocapitalize="off">
+          </span>
+          ${answerBadgeHtml}
+        </span>`;
+        
         const patternWithSpace = `(${circNum} )`;
         const patternNoSpace = `(${circNum})`;
         if (htmlText.includes(patternWithSpace)) {
@@ -356,34 +361,33 @@ function renderDictationTab(part, container) {
 
     card.appendChild(paraContainer);
 
-    // Control Buttons
+    // Control Buttons: Answer Toggle, Check, Hint, Reset
     const ctrlBar = document.createElement('div');
     ctrlBar.className = 'dict-controls';
     ctrlBar.style.display = 'flex';
     ctrlBar.style.flexWrap = 'wrap';
     ctrlBar.style.gap = '0.75rem';
     ctrlBar.style.alignItems = 'center';
+    ctrlBar.style.marginBottom = '2rem';
+    
     ctrlBar.innerHTML = `
       <button class="btn-primary" onclick="checkDictationAnswers('${part.id}')">
         <span>✓</span> 答え合わせをする
       </button>
-      <button class="btn-secondary" onclick="toggleDictationHints('${part.id}')">
-        <span>💡</span> ヒント（頭文字）を表示
+      <button class="btn-toggle-answer" id="btn-toggle-answer" onclick="toggleDictationAnswersVisibility('${part.id}')">
+        <span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '解答を隠す' : '解答を表示する'}
       </button>
-      <button class="btn-secondary" onclick="showAllDictationAnswers('${part.id}')">
-        <span>👀</span> 全ての正解を入力
+      <button class="btn-secondary" onclick="toggleDictationHints('${part.id}')">
+        <span>💡</span> ヒント（頭文字）
       </button>
       <button class="btn-secondary" onclick="resetDictation('${part.id}')">
-        <span>🔄</span> リセット
+        <span>🔄</span> 入力をクリア
       </button>
-      <button class="btn-action" onclick="setDictationMode('paragraph')">
-        <span>📖</span> 全文をパラグラフで確認
-      </button>
-      <div id="dict-score-display" style="font-weight: 700; margin-left: auto;"></div>
+      <div id="dict-score-display" style="font-weight: bold; font-size: 1.15rem; margin-left: auto;"></div>
     `;
     card.appendChild(ctrlBar);
 
-    // Keyboard enter navigation & auto save
+    // Input listeners for enter navigation and auto save
     setTimeout(() => {
       const inputs = card.querySelectorAll('.dict-input');
       inputs.forEach((inp, idx) => {
@@ -423,7 +427,7 @@ function renderDictationTab(part, container) {
         highlightedText = highlightedText.replace(regex, `<span class="highlight-answer">$1</span>`);
       });
 
-      block.innerHTML += speakerLabel + `<span style="line-height: 2.1;">${highlightedText}</span>`;
+      block.innerHTML += speakerLabel + `<span>${highlightedText}</span>`;
       
       if (para.translationJa) {
         block.innerHTML += `<div class="paragraph-translation"><strong>【日本語訳】</strong> ${para.translationJa}</div>`;
@@ -437,19 +441,102 @@ function renderDictationTab(part, container) {
     const backBar = document.createElement('div');
     backBar.style.display = 'flex';
     backBar.style.gap = '0.75rem';
+    backBar.style.marginBottom = '2rem';
     backBar.innerHTML = `
       <button class="btn-primary" onclick="playAudioFile('${part.audioFull}')">
-        <span>▶</span> このパートのネイティブ音声を聴く
+        <span>▶</span> このパートの全文音声を聴く
       </button>
       <button class="btn-secondary" onclick="setDictationMode('exercise')">
-        <span>✏️</span> 空所穴埋めモードに戻る
+        <span>✏️</span> 空所穴埋め演習に戻る
       </button>
     `;
     card.appendChild(backBar);
   }
 
+  // 1-C: Sentence-by-Sentence Practice Section (DIRECTLY INTEGRATED)
+  const sentenceSection = document.createElement('div');
+  sentenceSection.style.marginTop = '2rem';
+  sentenceSection.style.borderTop = '2px dashed var(--border)';
+  sentenceSection.style.paddingTop = '1.75rem';
+
+  sentenceSection.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <h3 style="font-size: 1.35rem; font-weight: bold; font-family: var(--font-serif); color: var(--text-main);">
+        🎧 1文ずつリスニング＆発音練習スタジオ
+      </h3>
+      <span style="font-size: 0.95rem; color: var(--text-muted);">
+        文ごとにプロのネイティブ音声を聴いて、マイクで発音チェックができます
+      </span>
+    </div>
+  `;
+
+  const sentenceList = document.createElement('div');
+  part.sentences.forEach((s, idx) => {
+    const sCard = document.createElement('div');
+    sCard.className = 'sentence-practice-card';
+    sCard.id = `sentence-practice-${s.id}`;
+
+    const lastScore = appState.scores[s.id];
+    let badgeHtml = '';
+    if (lastScore !== undefined) {
+      const cls = lastScore >= 90 ? 'score-high' : lastScore >= 70 ? 'score-mid' : 'score-low';
+      badgeHtml = `<span class="score-badge ${cls}">スコア: ${lastScore}点</span>`;
+    }
+
+    sCard.innerHTML = `
+      <div class="sentence-practice-header">
+        <span class="speaker-label" style="font-size: 1.15rem;">${s.speaker}</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-action" onclick="playSentenceNativeAudio('${s.audio}', '${s.id}')">
+            <span>🔊</span> この文を聴く
+          </button>
+          <button class="btn-action" id="btn-rec-${s.id}" onclick="startRecordingForSentence('${s.id}', '${s.en.replace(/'/g, "\\'")}')">
+            <span>🎙️</span> 発音採点
+          </button>
+        </div>
+      </div>
+      <div class="sentence-en">${s.en}</div>
+      <div class="sentence-ja">${s.ja}</div>
+      <div id="record-result-${s.id}" class="pronounce-feedback" style="${lastScore !== undefined ? '' : 'display: none;'}">
+        ${badgeHtml}
+      </div>
+    `;
+    sentenceList.appendChild(sCard);
+  });
+
+  sentenceSection.appendChild(sentenceList);
+  card.appendChild(sentenceSection);
+
   container.appendChild(card);
 }
+
+// Toggle Inlined Answers (Display / Hide Answers)
+window.toggleDictationAnswersVisibility = function(partId) {
+  isAnswersVisible = !isAnswersVisible;
+  const part = UNIT5_DATA.parts.find(p => p.id === partId);
+  if (!part) return;
+
+  part.dictation.blanks.forEach(b => {
+    const badge = document.getElementById(`dict-ans-${partId}-${b.num}`);
+    if (badge) {
+      badge.style.display = isAnswersVisible ? 'inline-block' : 'none';
+    }
+  });
+
+  const toggleBtn = document.getElementById('btn-toggle-answer');
+  if (toggleBtn) {
+    toggleBtn.innerHTML = `<span>${isAnswersVisible ? '🙈' : '👀'}</span> ${isAnswersVisible ? '解答を隠す' : '解答を表示する'}`;
+    if (isAnswersVisible) {
+      toggleBtn.classList.remove('btn-toggle-answer');
+      toggleBtn.classList.add('btn-secondary');
+    } else {
+      toggleBtn.classList.add('btn-toggle-answer');
+      toggleBtn.classList.remove('btn-secondary');
+    }
+  }
+
+  showToast(isAnswersVisible ? '📖 解答を表示しました' : '🙈 解答を非表示にしました');
+};
 
 window.setDictationMode = function(mode) {
   dictationViewMode = mode;
@@ -482,9 +569,9 @@ window.checkDictationAnswers = function(partId) {
     scoreDisplay.innerHTML = `<span style="color: ${correctCount === total ? 'var(--success)' : 'var(--primary)'}">結果: ${correctCount} / ${total} 正解 (${Math.round((correctCount/total)*100)}%)</span>`;
   }
   if (correctCount === total) {
-    showToast('🎉 全問正解です！完璧に聞き取れました！');
+    showToast('🎉 全問正解です！素晴らしいリスニング力です！');
   } else {
-    showToast(`${correctCount}問正解！ 赤い枠の単語を見直してみましょう。`);
+    showToast(`${correctCount}問正解！ 赤い枠の単語を見直してみましょう。「解答を表示する」で正解も確認できます。`);
   }
 };
 
@@ -498,22 +585,6 @@ window.toggleDictationHints = function(partId) {
     }
   });
   showToast('💡 未入力の箇所に頭文字のヒントを表示しました');
-};
-
-window.showAllDictationAnswers = function(partId) {
-  const part = UNIT5_DATA.parts.find(p => p.id === partId);
-  if (!part || !part.dictation) return;
-  part.dictation.blanks.forEach(b => {
-    const input = document.getElementById(`dict-input-${partId}-${b.num}`);
-    if (input) {
-      input.value = b.answer;
-      input.classList.remove('incorrect');
-      input.classList.add('correct');
-      appState.dictationAnswers[`${partId}_${b.num}`] = b.answer;
-    }
-  });
-  saveState();
-  showToast('すべての正解を入力しました');
 };
 
 window.resetDictation = function(partId) {
@@ -531,7 +602,18 @@ window.resetDictation = function(partId) {
   saveState();
   const scoreDisplay = document.getElementById('dict-score-display');
   if (scoreDisplay) scoreDisplay.innerHTML = '';
-  showToast('入力内容をリセットしました');
+  showToast('入力内容をクリアしました');
+};
+
+// Play Sentence-by-Sentence Native Audio
+window.playSentenceNativeAudio = function(audioSrc, sentenceId) {
+  document.querySelectorAll('.sentence-practice-card').forEach(el => el.classList.remove('speaking'));
+  const el = document.getElementById(`sentence-practice-${sentenceId}`);
+  if (el) el.classList.add('speaking');
+
+  playAudioFile(audioSrc, () => {
+    if (el) el.classList.remove('speaking');
+  });
 };
 
 // 2. Vocabulary Tab
@@ -556,14 +638,14 @@ function renderVocabTab(part, container) {
       item.className = 'exercise-item';
       item.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <span style="font-weight: 700; font-size: 1.05rem; color: var(--primary);">${v.num}. ${v.word}</span>
+          <span style="font-weight: bold; font-size: 1.25rem; color: var(--primary);">${v.num}. ${v.word}</span>
           <button class="btn-action" onclick="speakFallback('${v.word.replace(/'/g, "\\'")}')">
-            <span>🔊</span>
+            <span>🔊</span> 発音
           </button>
         </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <span class="hero-badge" style="background: var(--border);">${v.pos}</span>
-          <span style="font-size: 0.95rem; font-weight: 500;">${v.meaning}</span>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.35rem;">
+          <span class="hero-badge">${v.pos}</span>
+          <span style="font-size: 1.15rem; font-weight: bold;">${v.meaning}</span>
         </div>
       `;
       grid.appendChild(item);
@@ -586,7 +668,7 @@ function renderOutlineTab(part, container) {
       <div class="exercise-item">
         <div class="exercise-question">${item.label}</div>
         <button class="btn-action" onclick="toggleAnswer('outline-${currentPartIndex}-${item.num}')">
-          <span>👀</span> 正解を確認
+          <span>👀</span> 正解を表示 / 非表示
         </button>
         <div id="outline-${currentPartIndex}-${item.num}" class="answer-toggle-box" style="display: none;">
           <div class="answer-text">正解: ${item.answer}</div>
@@ -601,7 +683,7 @@ function renderOutlineTab(part, container) {
         <span>📊 C. Outline（要点・構成のまとめ）</span>
       </div>
     </div>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${part.outline.instructions}</p>
+    <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1rem;">${part.outline.instructions}</p>
     <div class="exercise-grid">${itemsHtml}</div>
   `;
   container.appendChild(card);
@@ -623,7 +705,7 @@ function renderQATab(part, container) {
   const list = document.createElement('div');
   list.style.display = 'flex';
   list.style.flexDirection = 'column';
-  list.style.gap = '1rem';
+  list.style.gap = '1.25rem';
 
   part.qa.forEach(qa => {
     const item = document.createElement('div');
@@ -633,12 +715,12 @@ function renderQATab(part, container) {
       <div class="exercise-question" style="display: flex; justify-content: space-between; align-items: flex-start;">
         <span>${qa.num ? qa.num + '. ' : ''}${qa.q}</span>
         <button class="btn-action" onclick="speakFallback('${qa.q.replace(/'/g, "\\'")}')">
-          <span>🔊</span>
+          <span>🔊</span> 設問を聴く
         </button>
       </div>
       <div style="margin-top: 0.5rem;">
         <button class="btn-action" onclick="toggleAnswer('qa-${currentPartIndex}-${qa.num}')">
-          <span>👀</span> 解答・解説を確認
+          <span>👀</span> 解答・解説を表示 / 隠す
         </button>
       </div>
       <div id="qa-${currentPartIndex}-${qa.num}" class="answer-toggle-box" style="display: none;">
@@ -648,7 +730,7 @@ function renderQATab(part, container) {
             <span>🔊</span>
           </button>
         </div>
-        <div class="answer-exp">${qa.explanation || ''}</div>
+        <div class="answer-exp" style="margin-top: 0.35rem;">${qa.explanation || ''}</div>
       </div>
     `;
     list.appendChild(item);
@@ -674,16 +756,16 @@ function renderCommunicationTab(part, container) {
   const list = document.createElement('div');
   list.style.display = 'flex';
   list.style.flexDirection = 'column';
-  list.style.gap = '1rem';
+  list.style.gap = '1.25rem';
 
   part.communication.forEach(c => {
     const item = document.createElement('div');
     item.className = 'exercise-item';
     item.innerHTML = `
       <div class="exercise-question">【場面 ${c.num}】 ${c.situation}</div>
-      ${c.pattern ? `<div style="font-family: var(--font-mono); font-size: 0.9rem; margin-bottom: 0.5rem;">${c.pattern}</div>` : ''}
+      ${c.pattern ? `<div style="font-size: 1.15rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--primary);">${c.pattern}</div>` : ''}
       <button class="btn-action" onclick="toggleAnswer('comm-${currentPartIndex}-${c.num}')">
-        <span>👀</span> 表現例・音声を確認
+        <span>👀</span> 表現例・音声を表示 / 隠す
       </button>
       <div id="comm-${currentPartIndex}-${c.num}" class="answer-toggle-box" style="display: none;">
         <div class="answer-text" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -692,7 +774,7 @@ function renderCommunicationTab(part, container) {
             <span>🔊</span>
           </button>
         </div>
-        ${c.explanation ? `<div class="answer-exp">${c.explanation}</div>` : ''}
+        ${c.explanation ? `<div class="answer-exp" style="margin-top: 0.35rem;">${c.explanation}</div>` : ''}
       </div>
     `;
     list.appendChild(item);
@@ -701,71 +783,6 @@ function renderCommunicationTab(part, container) {
   card.appendChild(list);
   container.appendChild(card);
 }
-
-// 6. Pronunciation Studio Tab (Sentence-by-Sentence with Native Neural Audio)
-function renderPronounceTab(part, container) {
-  const card = document.createElement('div');
-  card.className = 'section-card';
-  card.innerHTML = `
-    <div class="section-header">
-      <div class="section-title">
-        <span>🎙️ 一文録音＆発音評価スタジオ</span>
-      </div>
-    </div>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
-      プロのネイティブ音声をお手本に聞きながら、マイクに向かって発音してください。発音の正確さをAIが自動採点し、単語ごとのフィードバックを表示します。
-    </p>
-  `;
-
-  const list = document.createElement('div');
-  list.className = 'sentence-list';
-
-  part.sentences.forEach((s, idx) => {
-    const item = document.createElement('div');
-    item.className = 'sentence-item';
-    item.id = `pronounce-item-${s.id}`;
-
-    const lastScore = appState.scores[s.id];
-    let badgeHtml = '';
-    if (lastScore !== undefined) {
-      const cls = lastScore >= 90 ? 'score-high' : lastScore >= 70 ? 'score-mid' : 'score-low';
-      badgeHtml = `<span class="score-badge ${cls}">スコア: ${lastScore}点</span>`;
-    }
-
-    item.innerHTML = `
-      <div class="sentence-header">
-        <span class="sentence-tag">${s.speaker}</span>
-        <div class="sentence-actions">
-          <button class="btn-action" onclick="playSentenceNativeAudio('${s.audio}', '${s.id}')">
-            <span>🔊</span> お手本ネイティブ音声
-          </button>
-          <button class="btn-action" id="btn-rec-${s.id}" onclick="startRecordingForSentence('${s.id}', '${s.en.replace(/'/g, "\\'")}')">
-            <span>🎙️</span> 録音＆評価
-          </button>
-        </div>
-      </div>
-      <div class="sentence-en">${s.en}</div>
-      <div class="sentence-ja">${s.ja}</div>
-      <div id="record-result-${s.id}" class="pronounce-feedback" style="${lastScore !== undefined ? '' : 'display: none;'}">
-        ${badgeHtml}
-      </div>
-    `;
-    list.appendChild(item);
-  });
-
-  card.appendChild(list);
-  container.appendChild(card);
-}
-
-window.playSentenceNativeAudio = function(audioSrc, sentenceId) {
-  document.querySelectorAll('.sentence-item').forEach(el => el.classList.remove('speaking'));
-  const el = document.getElementById(`pronounce-item-${sentenceId}`);
-  if (el) el.classList.add('speaking');
-
-  playAudioFile(audioSrc, () => {
-    if (el) el.classList.remove('speaking');
-  });
-};
 
 window.toggleAnswer = function(elementId) {
   const el = document.getElementById(elementId);
@@ -802,7 +819,7 @@ window.startRecordingForSentence = function(sentenceId, targetText) {
   }
   if (resultBox) {
     resultBox.style.display = 'block';
-    resultBox.innerHTML = '<div style="color: var(--primary); font-size: 0.9rem;">🎙️ マイクに向かって話してください...</div>';
+    resultBox.innerHTML = '<div style="color: var(--primary); font-size: 1rem;">🎙️ マイクに向かって話してください...</div>';
   }
 
   recognition.onresult = (event) => {
@@ -832,12 +849,12 @@ window.startRecordingForSentence = function(sentenceId, targetText) {
       resultBox.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
           <span class="score-badge ${scoreClass}">スコア: ${score}点</span>
-          <span style="font-size: 0.85rem; font-weight: 600;">${scoreMsg}</span>
+          <span style="font-size: 1rem; font-weight: bold;">${scoreMsg}</span>
         </div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">認識された音声:</div>
+        <div style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.4rem;">認識された音声:</div>
         <div class="speech-transcript">"${spokenText}"</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">単語ごとの判定:</div>
-        <div style="margin-top: 0.2rem;">${wordFeedbackHtml}</div>
+        <div style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.4rem;">単語ごとの判定:</div>
+        <div style="margin-top: 0.2rem; font-size: 1.15rem;">${wordFeedbackHtml}</div>
       `;
     }
   };
@@ -845,14 +862,14 @@ window.startRecordingForSentence = function(sentenceId, targetText) {
   recognition.onerror = (event) => {
     console.warn('Speech recognition error:', event.error);
     if (resultBox) {
-      resultBox.innerHTML = `<div style="color: var(--danger); font-size: 0.85rem;">⚠️ 音声を認識できませんでした (${event.error})。マイクへのアクセスを確認してください。</div>`;
+      resultBox.innerHTML = `<div style="color: var(--danger); font-size: 0.95rem;">⚠️ 音声を認識できませんでした (${event.error})。マイクへのアクセスを確認してください。</div>`;
     }
   };
 
   recognition.onend = () => {
     if (btn) {
       btn.classList.remove('recording');
-      btn.innerHTML = '<span>🎙️</span> 録音＆評価';
+      btn.innerHTML = '<span>🎙️</span> 発音採点';
     }
     currentRecognition = null;
   };
@@ -863,7 +880,7 @@ window.startRecordingForSentence = function(sentenceId, targetText) {
     console.error(err);
     if (btn) {
       btn.classList.remove('recording');
-      btn.innerHTML = '<span>🎙️</span> 録音＆評価';
+      btn.innerHTML = '<span>🎙️</span> 発音採点';
     }
   }
 };
